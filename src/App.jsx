@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
+import { useAuth } from './AuthContext.jsx';
 
 /*
  * Indoor routing application with admin tools.
@@ -399,6 +400,8 @@ function computeRoute(features, startId, endId) {
 }
 
 export default function App() {
+  const { user, logout } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const mapRef = useRef(null);
   const drawRef = useRef(null);
   const routeAnimRef = useRef(null);
@@ -424,12 +427,17 @@ export default function App() {
   });
   const [drawingRect, setDrawingRect] = useState(false);
   const [userView, setUserView] = useState(() => {
+    if (!isAdmin) return true;
     try {
       return localStorage.getItem(STORAGE_KEYS.userView) === 'true';
     } catch (_) {
       return false;
     }
   });
+
+  useEffect(() => {
+    if (!isAdmin) setUserView(true);
+  }, [isAdmin]);
 
   // Persist simple UI state
   useEffect(() => {
@@ -1283,14 +1291,17 @@ export default function App() {
       <div id="map"></div>
       {/* Toggle button for switching between admin and user views */}
       <div id="mode-toggle">
+        {isAdmin && (
         <button
           className="btn btn-secondary"
           onClick={toggleUserView}
         >
           {userView ? 'Tryb administratora' : 'Podgląd użytkownika'}
         </button>
+        )}
+        <button className="btn btn-secondary" onClick={logout}>Wyloguj</button>
       </div>
-      {!userView && (
+      {!userView && isAdmin && (
       <div id="sidebar">
         <h2 className="sidebar-title">Panel administracyjny</h2>
         <div className="section">

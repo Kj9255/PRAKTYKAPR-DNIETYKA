@@ -1,10 +1,20 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.jsx';
+import Login from './Login.jsx';
+import { AuthProvider, useAuth } from './AuthContext.jsx';
 
-// Create the React root and render the application. This entry point is
-// consumed by Vite during development and build, and ensures that the
-// App component is mounted into the element with the id of 'root'.
+function Root() {
+  const { user } = useAuth();
+  return user ? <App /> : <Login />;
+}
+
+// Create the React root and render the application.
 const container = document.getElementById('root');
 const root = createRoot(container);
-root.render(<App />);
+root.render(
+  <AuthProvider>
+    <Root />
+  </AuthProvider>
+);
+
